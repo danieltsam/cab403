@@ -28,7 +28,16 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <signal.h>
 #include "data.h"
+
+static volatile sig_atomic_t should_exit = 0;
+
+void signal_handler(int sig) {
+    if (sig == SIGINT || sig == SIGTERM) {
+        should_exit = 1;
+    }
+}
 
 // Basic floor validation - MISRA compliant
 int is_valid_floor(const char *floor) {
@@ -94,6 +103,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     
+    signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
+    
     const char* car_name = argv[1];
     char shm_name[100];
     // Safe string construction without strcpy/strcat (MISRA compliant)
@@ -133,6 +145,8 @@ int main(int argc, char *argv[]) {
     pthread_mutex_unlock(&shm->mutex);
     
     for (;;) {
+        if (should_exit) break;
+        
         pthread_mutex_lock(&shm->mutex);
         
         // Ensure safety system is always active
@@ -219,6 +233,11 @@ int main(int argc, char *argv[]) {
         
         pthread_cond_wait(&shm->cond, &shm->mutex);
         pthread_mutex_unlock(&shm->mutex);
+    }
+    
+    // Cleanup
+    if (shm) {
+        munmap(shm, sizeof(car_shared_mem));
     }
     
     return 0;

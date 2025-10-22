@@ -5,7 +5,13 @@ cd "$(dirname "$0")"
 
 cleanup() {
   pkill -f '^./controller' 2>/dev/null || true
+  pkill -f '^./car' 2>/dev/null || true
+  pkill -f '^./safety' 2>/dev/null || true
+  pkill -f '^./call' 2>/dev/null || true
+  pkill -f '^./internal' 2>/dev/null || true
   fuser -k 3000/tcp 2>/dev/null || true
+  rm -f /dev/shm/car* 2>/dev/null || true
+  sleep 0.5
 }
 
 trap cleanup EXIT INT TERM
