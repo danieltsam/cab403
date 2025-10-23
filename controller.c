@@ -157,19 +157,23 @@ void* handle_client(void *arg) {
                     strcpy(car->status, status);
                     car->current_floor = floor_to_int(current);
                     
-                    // Check if car is ready for next floor
-                    if (strcmp(status, "Closed") == 0 && car->queue_size > 0) {
-                        char floor_msg[16];
-                        int_to_floor(car->queue[0], floor_msg, sizeof(floor_msg));
-                        char cmd[32];
-                        snprintf(cmd, sizeof(cmd), "FLOOR %s", floor_msg);
-                        send_msg(car->socket_fd, cmd);
-                        
-                        // Remove from queue
+                    // If car has arrived at destination and doors are open, remove from queue
+                    if (car->queue_size > 0 && car->current_floor == car->queue[0] &&
+                        (strcmp(car->status, "Open") == 0 || strcmp(car->status, "Opening") == 0)) {
+                        // Remove completed destination from queue
                         for (int i = 0; i < car->queue_size - 1; i++) {
                             car->queue[i] = car->queue[i + 1];
                         }
                         car->queue_size--;
+                        
+                        // Send next destination if queue not empty
+                        if (car->queue_size > 0) {
+                            char floor_msg[16];
+                            int_to_floor(car->queue[0], floor_msg, sizeof(floor_msg));
+                            char cmd[32];
+                            snprintf(cmd, sizeof(cmd), "FLOOR %s", floor_msg);
+                            send_msg(car->socket_fd, cmd);
+                        }
                     }
                 }
                 pthread_mutex_unlock(&cars_mutex);

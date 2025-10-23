@@ -1,24 +1,3 @@
-/*
- * Safety System Component
- * 
- * This component implements basic safety-critical functionality for the elevator system.
- * While not fully MISRA C compliant, it follows basic safety principles:
- * 
- * 1. Uses basic error checking and validation
- * 2. Implements required safety checks as specified
- * 3. Uses proper mutex locking for shared memory access
- * 4. Provides appropriate error messages
- * 
- * MISRA C Compliance:
- * - Uses write() instead of printf() for output
- * - No dynamic memory allocation (malloc/free)
- * - Safe string operations without strcpy/strcat
- * - Bounded loops and safe string handling
- * - Proper error checking and validation
- * 
- * This implementation follows MISRA C guidelines for safety-critical systems
- * while maintaining readability and functionality for educational purposes.
- */
 
 #include <stdio.h>
 #include <stdlib.h>
